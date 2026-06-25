@@ -1,0 +1,15 @@
+# CIFAR-100 + small ViT (primary ViT baseline, 100-class).
+# Inherits the full schema from defaults.yaml.
+
+defaults: defaults.yaml
+
+dataset: cifar100
+model: vit
+
+# ViT recipe: AdamW, low lr, cosine schedule.
+lr: 1.0e-3
+weight_decay: 0.05
+optimizer: adamw
+scheduler: cosine
+epochs: 200
+batch_size: 128

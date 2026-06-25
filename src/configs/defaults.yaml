@@ -1,0 +1,63 @@
+# Base training configuration for the MBA loss-family experiments.
+#
+# This is the self-contained base config: every field the trainer reads is
+# listed here with a documented default. Model-specific configs
+# (`cifar10_resnet56.yaml`, `cifar10_vit.yaml`, `cifar100_resnet56.yaml`,
+# `cifar100_vit.yaml`) inherit from this file via `defaults: defaults.yaml` and
+# override only the model/optimizer/lr fields.
+#
+# To run a specific (dataset, model, loss, seed) combination, point the
+# trainer at the matching model config and override `loss` and `seed` on the
+# CLI, e.g.:
+#
+#   python src/train.py --config src/configs/cifar10_resnet56.yaml \
+#       --override loss=mba_ce seed=1
+#
+# That keeps the config count at 5 instead of 32 (8 losses x 2 models x 2
+# datasets). The 3 seeds (0, 1, 2) are run by repeating the same command with
+# `--override seed=N`.
+
+dataset: cifar10          # cifar10 | cifar100
+model: resnet56           # resnet56 | vit | resnet20 | resnet44 | resnet32 | resnet110
+loss: mba_ce              # ce | focal | poly | lace_multi | f_multi | mba_ce | mba_f | mba_ps
+seed: 0
+
+# Optimisation (defaults to ResNet SGD settings).
+lr: 0.1
+epochs: 200
+batch_size: 128
+weight_decay: 5.0e-4
+optimizer: sgd           # sgd | adamw | adam
+scheduler: cosine         # cosine | step | plateau
+
+# Output / data.
+output_dir: null          # null -> runs/<dataset>_<model>_<loss>_seed<seed>
+data_root: ./data
+num_workers: 4
+cutout: false
+
+# Loss-specific kwargs. Ignored keys are silently dropped by the loss factory.
+# Per-loss recommended values (apply via --override loss_kwargs.X=Y):
+#   focal      : gamma=2.0
+#   poly       : epsilon=2.0
+#   lace_multi : (defaults)
+#   f_multi    : alpha=0.5
+#   mba_ce     : gamma=1.0, delta=0.001, gamma_learnable=false
+#   mba_f      : alpha=0.5, gamma=1.0
+#   mba_ps     : gamma=1.0, delta=0.001, num_epochs=200
+loss_kwargs:
+  gamma: 1.0
+  delta: 0.001
+  alpha: 0.5
+  epsilon: 2.0
+  gamma_learnable: false
+  num_epochs: 200
+
+# Model-specific kwargs (rarely needed; ViT uses defaults from its factory).
+model_kwargs: {}
+
+# Logging / checkpointing.
+log_interval: 50         # print every N batches
+eval_interval: 1          # eval every N epochs
+save_checkpoint: true
+checkpoint_best_only: true

@@ -1,0 +1,16 @@
+# CIFAR-10 + small ViT (primary ViT baseline).
+# Inherits the full schema from defaults.yaml and pins the AdamW optimiser
+# settings recommended for the small ViT.
+
+defaults: defaults.yaml
+
+dataset: cifar10
+model: vit
+
+# ViT recipe: AdamW, low lr, cosine schedule.
+lr: 1.0e-3
+weight_decay: 0.05
+optimizer: adamw
+scheduler: cosine
+epochs: 200
+batch_size: 128

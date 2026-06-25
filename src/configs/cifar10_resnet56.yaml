@@ -1,0 +1,20 @@
+# CIFAR-10 + ResNet-56 (primary CNN baseline).
+# Inherits the full schema from defaults.yaml and only pins the dataset/model
+# and the SGD optimiser settings recommended for CIFAR ResNets.
+#
+# Run a specific loss/seed:
+#   python src/train.py --config src/configs/cifar10_resnet56.yaml \
+#       --override loss=mba_ce seed=0
+
+defaults: defaults.yaml
+
+dataset: cifar10
+model: resnet56
+
+# ResNet CIFAR recipe: SGD + Nesterov, momentum 0.9, cosine schedule.
+lr: 0.1
+weight_decay: 5.0e-4
+optimizer: sgd
+scheduler: cosine
+epochs: 200
+batch_size: 128

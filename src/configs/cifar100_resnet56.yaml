@@ -1,0 +1,15 @@
+# CIFAR-100 + ResNet-56 (primary CNN baseline, 100-class).
+# Inherits the full schema from defaults.yaml.
+
+defaults: defaults.yaml
+
+dataset: cifar100
+model: resnet56
+
+# ResNet CIFAR recipe: SGD + Nesterov, momentum 0.9, cosine schedule.
+lr: 0.1
+weight_decay: 5.0e-4
+optimizer: sgd
+scheduler: cosine
+epochs: 200
+batch_size: 128
