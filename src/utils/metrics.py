@@ -2,8 +2,7 @@
 
 All accumulators accept ``(logits, targets)`` batches with ``logits`` of shape
 ``(B, C)`` and ``targets`` of shape ``(B,)`` long tensor, matching the loss
-module convention. Accepts tensors on any device; metric state is moved to
-CPU for numpy conversion.
+module convention. CPU-only: no device transfers are made here.
 """
 from __future__ import annotations
 

@@ -7,7 +7,9 @@ CLI::
 Loads a trained checkpoint, rebuilds the model and test dataset, computes
 Top-1 accuracy, ECE, and the confusion matrix on the test set, prints a
 summary, and (if ``--output`` is given) writes the metrics to a JSON file.
-Uses CUDA when available, otherwise falls back to CPU.
+
+CPU-only. Threads are capped to ``min(8, os.cpu_count())`` to match the
+trainer.
 """
 from __future__ import annotations
 
@@ -43,7 +45,7 @@ def evaluate(config: Dict[str, Any], checkpoint_path: str,
         Dict with ``top1``, ``ece``, ``confusion_matrix`` (as nested lists),
         ``epoch`` (the checkpoint epoch), and the resolved ``config``.
     """
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
     dataset = config["dataset"]
     model_name = config["model"]
     batch_size = int(config.get("batch_size", 128))

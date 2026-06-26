@@ -7,9 +7,8 @@ CLI::
 Loads a YAML config (optionally inheriting from a ``defaults:`` base), applies
 ``--override key=value`` overrides (dotted keys, YAML-parsed values), runs the
 training loop, and writes ``history.json``, ``param_trajectory.json``,
-``best.pt``, ``final.pt``, and plots into ``output_dir``. Uses CUDA when
-available, otherwise falls back to CPU; CPU threads are capped to
-``min(8, os.cpu_count())`` to avoid contention.
+``best.pt``, ``final.pt``, and plots into ``output_dir``. CPU-only; threads are
+capped to ``min(8, os.cpu_count())`` to avoid contention on the 128-core host.
 """
 from __future__ import annotations
 
@@ -214,7 +213,7 @@ def _save_checkpoint(path: str, model: nn.Module, loss_fn: nn.Module,
 
 def train(config: Dict[str, Any]) -> Dict[str, Any]:
     """Run the full training loop described by ``config``."""
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cpu")
     set_seed(int(config.get("seed", 0)))
 
     dataset, model_name, loss_name = config["dataset"], config["model"], config["loss"]
@@ -235,8 +234,7 @@ def train(config: Dict[str, Any]) -> Dict[str, Any]:
 
     print(f"[train] dataset={dataset} model={model_name} loss={loss_name} "
           f"epochs={epochs} lr={lr} wd={weight_decay} optim={optimizer_name} "
-          f"sched={scheduler_name} output_dir={output_dir} device={device} "
-          f"threads={torch.get_num_threads()}")
+          f"sched={scheduler_name} output_dir={output_dir} threads={torch.get_num_threads()}")
 
     train_loader, test_loader, num_classes = get_cifar_loaders(
         name=dataset, batch_size=batch_size, root=config.get("data_root", "./data"),

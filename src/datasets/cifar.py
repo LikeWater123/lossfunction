@@ -4,8 +4,8 @@ Provides a single entry point :func:`get_cifar_loaders` returning train/test
 :class:`~torch.utils.data.DataLoader` objects plus the number of classes,
 along with a small :class:`Cutout` augmentation (DeVries & Taylor, 2017).
 
-Device placement is the responsibility of the trainer; loaders set
-``pin_memory=True`` when CUDA is available to speed up host-to-device copies.
+The module is CPU-only: no ``.cuda()`` calls are made here. Device placement
+is the responsibility of the trainer.
 """
 
 from __future__ import annotations
@@ -123,15 +123,13 @@ def get_cifar_loaders(
         train_sampler = DistributedSampler(train_set, shuffle=True)
         train_shuffle = False  # the sampler owns shuffling (call set_epoch)
 
-    pin_memory = torch.cuda.is_available()
-
     train_loader = DataLoader(
         train_set,
         batch_size=batch_size,
         shuffle=train_shuffle,
         sampler=train_sampler,
         num_workers=num_workers,
-        pin_memory=pin_memory,
+        pin_memory=False,
         drop_last=True,
     )
     test_loader = DataLoader(
@@ -139,7 +137,7 @@ def get_cifar_loaders(
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
-        pin_memory=pin_memory,
+        pin_memory=False,
         drop_last=False,
     )
     return train_loader, test_loader, num_classes
