@@ -123,13 +123,15 @@ def get_cifar_loaders(
         train_sampler = DistributedSampler(train_set, shuffle=True)
         train_shuffle = False  # the sampler owns shuffling (call set_epoch)
 
+    pin_memory = torch.cuda.is_available()
+
     train_loader = DataLoader(
         train_set,
         batch_size=batch_size,
         shuffle=train_shuffle,
         sampler=train_sampler,
         num_workers=num_workers,
-        pin_memory=False,
+        pin_memory=pin_memory,
         drop_last=True,
     )
     test_loader = DataLoader(
@@ -137,7 +139,7 @@ def get_cifar_loaders(
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
-        pin_memory=False,
+        pin_memory=pin_memory,
         drop_last=False,
     )
     return train_loader, test_loader, num_classes

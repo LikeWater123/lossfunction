@@ -45,7 +45,7 @@ def evaluate(config: Dict[str, Any], checkpoint_path: str,
         Dict with ``top1``, ``ece``, ``confusion_matrix`` (as nested lists),
         ``epoch`` (the checkpoint epoch), and the resolved ``config``.
     """
-    device = torch.device("cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     dataset = config["dataset"]
     model_name = config["model"]
     batch_size = int(config.get("batch_size", 128))

@@ -213,7 +213,7 @@ def _save_checkpoint(path: str, model: nn.Module, loss_fn: nn.Module,
 
 def train(config: Dict[str, Any]) -> Dict[str, Any]:
     """Run the full training loop described by ``config``."""
-    device = torch.device("cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     set_seed(int(config.get("seed", 0)))
 
     dataset, model_name, loss_name = config["dataset"], config["model"], config["loss"]
