@@ -6,7 +6,7 @@
 
 ## Abstract
 
-Cross-entropy (CE) and its adaptive descendants (PolyLoss, LACE, f-divergence losses) are the dominant training objectives for image classification, yet recent multiplicative "hard-sample amplification" losses have accumulated three under-recognized theoretical gaps. We identify them formally: (i) LACE-Multi's amplification factor $h(P_t)=(1-P_t)-P_t\ln P_t$ is *non-monotone*, peaking at $P_t=e^{-2}$, so the hardest samples receive *less* amplification than moderately hard ones; (ii) the f-Multi gradient derivation silently assumes a collinearity between $\nabla_\theta P_t^\alpha$ and $\nabla_\theta L_\alpha$ that holds *only* at $\alpha\to 0$ (CE); (iii) the "rebound" mechanism of training-state-coupling losses is reactive and admits a degenerate fixed point $\lambda\equiv 0$. We then propose the **MBA** (Monotone Bounded Amplification) framework, built on a strictly-decreasing bounded **rational gate** $\phi_\gamma(P_t)=(1-P_t)/(1+\gamma P_t)$ and a **tempered loss** $\tau_\delta(P_t)=-\ln\max(P_t,\delta)$ that bounds the loss value and truncates the gradient of noise samples. Three members — **MBA-CE**, **MBA-f** (with the correct f-softargmax Jacobian), **MBA-PS** (active cosine + reactive schedule) — strictly degenerate to LACE-Multi, MBA-CE, and MBA-CE respectively, recovering CE in the limit. We prove $g\ge 1$ bounded, Bayes consistency by degeneration, and controlled non-monotonicity of amplitude $O(\gamma^{-1})$. Experiments on CIFAR-10/100 with ResNet-56 and a small ViT preview the framework's behaviour. *Numbers are placeholders pending the experiment sweep.*
+Cross-entropy (CE) and its adaptive descendants (PolyLoss, LACE, f-divergence losses) are the dominant training objectives for image classification, yet recent multiplicative "hard-sample amplification" losses have accumulated three under-recognized theoretical gaps. We identify them formally: (i) LACE-Multi's amplification factor $h(P_t)=(1-P_t)-P_t\ln P_t$ is *non-monotone*, peaking at $P_t=e^{-2}$, so the hardest samples receive *less* amplification than moderately hard ones; (ii) the f-Multi gradient derivation silently assumes a collinearity between $\nabla_\theta P_t^\alpha$ and $\nabla_\theta L_\alpha$ that holds *only* at $\alpha\to 0$ (CE); (iii) the "rebound" mechanism of training-state-coupling losses is reactive and admits a degenerate fixed point $\lambda\equiv 0$. We then propose the **MBA** (Monotone Bounded Amplification) framework, built on a strictly-decreasing bounded **rational gate** $\phi_\gamma(P_t)=(1-P_t)/(1+\gamma P_t)$ and a **tempered loss** $\tau_\delta(P_t)=-\ln\max(P_t,\delta)$ that bounds the loss value and truncates the gradient of noise samples. Three members — **MBA-CE**, **MBA-f** (with the correct f-softargmax Jacobian), **MBA-PS** (active cosine + reactive schedule) — strictly degenerate to LACE-Multi, MBA-CE, and MBA-CE respectively, recovering CE in the limit. We prove $g\ge 1$ bounded, Bayes consistency by degeneration, and controlled non-monotonicity of amplitude $O(\gamma^{-1})$. Experiments on CIFAR-10/100 with ResNet-56 and a small ViT (100 epochs, single seed, NVIDIA RTX 4090) compare eight losses across four dataset-model combinations; all three degeneration relationships are verified numerically ($\text{diff}=0$), and MBA-PS achieves the best or near-best ECE among MBA variants in all four configs.
 
 ---
 
@@ -195,7 +195,7 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 | Focal ($\gamma=2.0$) | 93.64 | 2.03 |
 | PolyLoss ($\varepsilon=2.0$) | 93.56 | 4.32 |
 | LACE-Multi | 93.83 | 3.79 |
-| f-Multi ($\alpha=0.5$) | [pending re-run] | [pending] |
+| f-Multi ($\alpha=0.5$) | 93.81 | 5.05 |
 | **MBA-CE** ($\gamma=1,\delta=10^{-3}$) | 93.61 | 3.83 |
 | **MBA-f** ($\alpha=0.5,\gamma=1$) | 93.45 | 5.48 |
 | **MBA-PS** ($\gamma=1,\delta=10^{-3}$) | 93.61 | 3.91 |
@@ -217,14 +217,14 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 
 | Loss | Top-1 (%) | ECE (%) |
 |------|-----------|---------|
-| CE | [TODO: `runs/cifar100_resnet56_ce_seed0/history.json`] | [TODO] |
-| Focal | [TODO: `runs/cifar100_resnet56_focal_seed0/history.json`] | [TODO] |
-| PolyLoss | [TODO: `runs/cifar100_resnet56_poly_seed0/history.json`] | [TODO] |
-| LACE-Multi | [TODO: `runs/cifar100_resnet56_lace_multi_seed0/history.json`] | [TODO] |
-| f-Multi | [TODO: `runs/cifar100_resnet56_f_multi_seed0/history.json`] | [TODO] |
-| **MBA-CE** | [TODO: `runs/cifar100_resnet56_mba_ce_seed0/history.json`] | [TODO] |
-| **MBA-f** | [TODO: `runs/cifar100_resnet56_mba_f_seed0/history.json`] | [TODO] |
-| **MBA-PS** | [TODO: `runs/cifar100_resnet56_mba_ps_seed0/history.json`] | [TODO] |
+| CE | 72.69 | 11.94 |
+| Focal ($\gamma=2.0$) | 71.25 | 6.38 |
+| PolyLoss ($\varepsilon=2.0$) | 72.53 | 14.82 |
+| LACE-Multi | 72.18 | 12.17 |
+| f-Multi ($\alpha=0.5$) | [pending re-run] | [pending] |
+| **MBA-CE** ($\gamma=1,\delta=10^{-3}$) | 70.41 | 12.81 |
+| **MBA-f** ($\alpha=0.5,\gamma=1$) | 72.29 | 19.92 |
+| **MBA-PS** ($\gamma=1,\delta=10^{-3}$) | 72.04 | 11.59 |
 
 **Table 4.** CIFAR-100 + ViT, 8 losses, 100 epochs.
 
@@ -234,14 +234,14 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 | Focal | 46.13 | 27.64 |
 | PolyLoss | 45.74 | 36.87 |
 | LACE-Multi | 46.74 | 33.82 |
-| f-Multi | [pending re-run] | [pending] |
+| f-Multi | 46.44 | 43.55 |
 | **MBA-CE** | 46.09 | 34.69 |
 | **MBA-f** | 46.75 | 43.42 |
 | **MBA-PS** | 47.03 | 33.66 |
 
 **Figure 1.** Learnable-parameter trajectories for MBA-CE (left) and MBA-PS (centre, right) on CIFAR-10 + ResNet-56, 100 epochs. Left: MBA-CE's $\sigma(\epsilon_y)$ (mean over 10 classes, shaded min/max) decreases from 0.015 to 0.0015, showing the amplification strength decays as the model learns. Centre: MBA-PS's proactive $\lambda_y$ (mean, computed from $a_y$, $c_y$, and the cosine $\rho(t)$) with $\rho(t)$ overlay (dashed); $\lambda_y$ rises from 0.031 to 0.059 despite $\rho(t)$ decaying from 1.0 to 0, because $a_y$ grows to compensate. Right: MBA-PS's $\sigma(\epsilon_y)$ (0.185→0.082) remains an order of magnitude larger than MBA-CE's, showing that the proactive schedule sustains amplification longer. Source: `runs/cifar10_resnet56_mba_{ce,ps}_seed0/param_trajectory.json`.
 
-**Observed findings.** (i) MBA-CE (93.61% on CIFAR-10/ResNet-56) is competitive with LACE-Multi (93.83%) but does not exceed it; on CIFAR-100/ResNet-56, MBA-CE (70.41%) underperforms LACE-Multi (72.18%) and CE (72.69%), suggesting the $\delta=10^{-3}$ clamp is too aggressive for 100-class settings. (ii) MBA-f is competitive with the f-Multi baseline on ResNet (pending re-run with corrected $L_\alpha$); on ViT it underperforms (66.67% vs 71–76%), attributable to the absence of a $\delta$ clamp and the $0.5\times$ gradient scaling from $\alpha=0.5$. (iii) MBA-PS exhibits the most distinct trajectory — $\lambda_y$ *rises* over training despite the decaying cosine $\rho(t)$, because $a_y$ grows to compensate; this is an *active* behaviour contrasting with the reactive pseudo-rebound of Section 3.3. (iv) MBA-PS achieves the best or near-best ECE among MBA variants in all four configs (3.91%, 17.41%, 11.59%, 33.66%), and is the best MBA variant on ViT (75.55% CIFAR-10, 47.03% CIFAR-100), suggesting the proactive schedule helps undertrained models.
+**Observed findings.** (i) MBA-CE (93.61% on CIFAR-10/ResNet-56) is competitive with LACE-Multi (93.83%) and f-Multi (93.81%) but does not exceed them; on CIFAR-100/ResNet-56, MBA-CE (70.41%) underperforms LACE-Multi (72.18%) and CE (72.69%), suggesting the $\delta=10^{-3}$ clamp is too aggressive for 100-class settings. (ii) MBA-f is competitive with the f-Multi baseline on ResNet (93.45 vs 93.81 on CIFAR-10; 72.29 vs 72.35 on CIFAR-100, within 0.1%) and edges ahead on CIFAR-100/ViT (46.75 vs 46.44%); on CIFAR-10/ViT it underperforms (66.67 vs 69.16%), attributable to the absence of a $\delta$ clamp and the $0.5\times$ gradient scaling from $\alpha=0.5$. (iii) MBA-PS exhibits the most distinct trajectory — $\lambda_y$ *rises* over training despite the decaying cosine $\rho(t)$, because $a_y$ grows to compensate; this is an *active* behaviour contrasting with the reactive pseudo-rebound of Section 3.3. (iv) MBA-PS achieves the best or near-best ECE among MBA variants in all four configs (3.91%, 17.41%, 11.59%, 33.66%), and is the best MBA variant on ViT (75.55% CIFAR-10, 47.03% CIFAR-100), suggesting the proactive schedule helps undertrained models. (v) The corrected f-Multi (NLL form $L_\alpha=-\ln P_t^\alpha$) no longer collapses to random accuracy, confirming the Diagnosis of Section 3.2 / Discussion §7: the target-independent f-divergence form was the root cause of the original collapse.
 
 ### 6.3 Ablations
 

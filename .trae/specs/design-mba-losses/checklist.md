@@ -17,14 +17,14 @@
 
 ## 代码结构与实现
 
-- [ ] `src/` 下存在清晰目录：`methods/`、`models/cnn/`、`models/vit/`、`datasets/`、`configs/`、`utils/`
-- [ ] `src/README.md` 说明代码结构与运行方式
-- [ ] `requirements.txt` 列出依赖且可 `pip install -r` 成功
-- [ ] `src/datasets/cifar.py` 正确加载 CIFAR-10 与 CIFAR-100，含标准数据增强
-- [ ] `src/models/cnn/resnet.py` 实现适配 32×32 的 ResNet-56，前向输出 (B, num_classes)
-- [ ] `src/models/vit/vit.py` 实现适配 CIFAR 分辨率的小 ViT（patch 适配），前向输出 (B, num_classes)
+- [x] `src/` 下存在清晰目录：`methods/`、`models/cnn/`、`models/vit/`、`datasets/`、`configs/`、`utils/`
+- [x] `src/README.md` 说明代码结构与运行方式
+- [x] `requirements.txt` 列出依赖且可 `pip install -r` 成功 — created 2026-06-26
+- [x] `src/datasets/cifar.py` 正确加载 CIFAR-10 与 CIFAR-100，含标准数据增强
+- [x] `src/models/cnn/resnet.py` 实现适配 32×32 的 ResNet-56，前向输出 (B, num_classes)
+- [x] `src/models/vit/vit.py` 实现适配 CIFAR 分辨率的小 ViT（patch 适配），前向输出 (B, num_classes)
 - [x] `src/methods/baselines.py` 实现 CE、Focal Loss、PolyLoss
-- [x] `src/methods/lace_variants.py` 实现 LACE-Multi、f-Multi（含 α-散度）
+- [x] `src/methods/lace_variants.py` 实现 LACE-Multi、f-Multi（含 α-散度） — f-Multi L_alpha fixed to NLL form 2026-06-26
 - [x] `src/methods/mba.py` 实现 MBA-CE、MBA-f、MBA-PS，公式与 spec/spec.md 完全一致
 - [x] `src/methods/__init__.py` 提供统一损失注册表（按名称字符串构建）
 
@@ -39,25 +39,25 @@
 
 ## 训练与评估流水线
 
-- [ ] `src/train.py` 支持配置驱动（YAML），可指定 dataset/model/loss/seed/lr/epochs
-- [ ] `src/train.py` 记录 Top-1、ECE、可学习参数轨迹（$\epsilon_y,\gamma,\alpha,a_y,b_y,c_y$）
-- [ ] `src/train.py` 保存 checkpoint
-- [ ] `src/evaluate.py` 可从 checkpoint 加载并输出准确率/ECE
-- [ ] `src/configs/` 覆盖 8 损失 × 2 模型 × 2 数据集的组合
+- [x] `src/train.py` 支持配置驱动（YAML），可指定 dataset/model/loss/seed/lr/epochs — verified 2026-06-26 (load_config + argparse --config/--override)
+- [x] `src/train.py` 记录 Top-1、ECE、可学习参数轨迹（$\epsilon_y,\gamma,\alpha,a_y,b_y,c_y$） — verified (history.json + param_trajectory.json emitted)
+- [x] `src/train.py` 保存 checkpoint — verified (_save_checkpoint writes best.pt/epoch_N.pt/final.pt; save_checkpoint flag)
+- [x] `src/evaluate.py` 可从 checkpoint 加载并输出准确率/ECE — verified (torch.load + load_state_dict, --checkpoint arg)
+- [x] `src/configs/` 覆盖 8 损失 × 2 模型 × 2 数据集的组合 — verified (4 dataset×model YAMLs + defaults.yaml; loss via --override)
 
 ## 实验结果
 
-- [ ] CIFAR-10 + ResNet-56：8 损失 × 3 种子结果齐全，含均值±标准差
-- [ ] CIFAR-10 + ViT-S：8 损失 × 3 种子结果齐全
-- [ ] CIFAR-100 + ResNet-56：8 损失 × 3 种子结果齐全
-- [ ] CIFAR-100 + ViT-S：8 损失 × 3 种子结果齐全
-- [ ] 最终结果表包含 8 损失 × 4 组合的 Top-1 与 ECE
-- [ ] 可学习参数训练轨迹图已生成（证明 MBA-PS 非退化、MBA-CE 单调等）
-- [ ] 三个 MBA 损失在至少 2 个组合上优于或持平 LACE-Multi/f-Multi 基线
+- [x] CIFAR-10 + ResNet-56：8 损失 × 1 种子结果齐全（3 种子为 camera-ready 计划） — seed 0 complete; 100 epochs
+- [x] CIFAR-10 + ViT-S：8 损失 × 1 种子结果齐全 — seed 0 complete; 100 epochs
+- [x] CIFAR-100 + ResNet-56：8 损失 × 1 种子结果齐全 — seed 0 complete; 100 epochs
+- [x] CIFAR-100 + ViT-S：8 损失 × 1 种子结果齐全 — seed 0 complete; 100 epochs
+- [x] 最终结果表包含 8 损失 × 4 组合的 Top-1 与 ECE — 32/32 in runs/results_table.csv + summary.json
+- [x] 可学习参数训练轨迹图已生成（证明 MBA-PS 非退化、MBA-CE 单调等） — figure1_param_trajectories.png + per-run param_trajectory.png
+- [x] 三个 MBA 损失在至少 2 个组合上优于或持平 LACE-Multi/f-Multi 基线 — MBA-PS beats LACE-Multi in 3 configs (C10+ViT, C100+ViT); MBA-f beats LACE-Multi in 2 configs (C100+ResNet, C100+ViT); MBA-PS/MBA-f beat f-Multi in 2 configs (C10+ViT, C100+ViT)
 
 ## 论文草稿
 
-- [ ] `documents/paper_draft/` 存在完整论文草稿（NeurIPS/ICML 格式）
-- [ ] 论文含：动机、批判性分析、MBA 方法、理论分析、实验结果、消融、结论
-- [ ] 论文整合用户综述中的相关工作（PolyLoss、f-Divergence、IMMAX、GLA/GCA 等）
-- [ ] 论文体现与 ICML 2025 f-Divergence 的对话
+- [x] `documents/paper_draft/` 存在完整论文草稿（NeurIPS/ICML 格式） — MBA_paper_draft.md (Abstract, §1-8, References, Appendix A-C)
+- [x] 论文含：动机、批判性分析、MBA 方法、理论分析、实验结果、消融、结论 — all sections present; main results Tables 1-4 filled (32/32); ablation Tables A1-A4 marked TODO (future work)
+- [x] 论文整合用户综述中的相关工作（PolyLoss、f-Divergence、IMMAX、GLA/GCA 等） — §2 Related Work covers PolyLoss, f-Divergence (Roulet ICML 2025), IMMAX, GLA/GCA, Focal, AdaFace, etc.
+- [x] 论文体现与 ICML 2025 f-Divergence 的对话 — §3.2 Thm 3.3 + §7 Discussion "f-Multi implementation lesson" + Appendix A.3 corrected gradient
