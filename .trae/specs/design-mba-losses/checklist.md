@@ -2,18 +2,18 @@
 
 ## 理论与文档
 
-- [ ] `documents/LACE改进方案深度理论分析.md` 末尾新增"第六章 MBA 损失函数族：批判性分析与新设计"，且第一至五章内容**未被修改**（用 diff 验证仅追加）
-- [ ] §6.1 明确证明 LACE-Multi 的 $h(P_t)=(1-P_t)-P_t\ln P_t$ 在 $P_t=e^{-2}$ 取极大值，并指出最难点（$P_t<e^{-2}$）放大回退
-- [ ] §6.1 证明乘以无界 $L_{CE}$ 在 $P_t\to0$ 时梯度爆炸（含数值示例）
-- [ ] §6.2 用 f-softargmax Jacobian 给出 MBA-f 的严格梯度，指出原 f-Multi 的共线假设仅在 $\alpha\to0$ 成立
-- [ ] §6.2 给出 D3 解决的充要条件，并验证 $\alpha\in\{0,0.5,1.5\}$
-- [ ] §6.3 证明简化版 $\lambda=\sigma(a\bar P_t+b)$ 在 $\bar P_t$ 单调上升时等价单调调度
-- [ ] §6.4 给出 MBA 族统一框架：理性门 $\phi_\gamma$ 严格单调有界、温度化 $\tau_\delta$、放大因子 $g=1+\sigma\psi$
-- [ ] §6.4 含单调性定理、有界性定理、Bayes 一致性草图（严格性高于已有章节）
-- [ ] §6.5 MBA-CE：$\psi(P_t)$ 显式形式 + 严格单调证明 + 退化到 LACE-Multi 的论证
-- [ ] §6.6 MBA-f：退化到 MBA-CE 的论证
-- [ ] §6.7 MBA-PS：非退化解保证 + 退化到 MBA-CE 的论证
-- [ ] §6.8 D1–D6 对照表 + 三方案退化/推广关系总结
+- [x] `documents/LACE改进方案深度理论分析.md` 末尾新增"第六章 MBA 损失函数族：批判性分析与新设计"，且第一至五章内容**未被修改**（用 diff 验证仅追加） — Chapter 6 at line 792, single commit `af2d409 code`, appended only
+- [x] §6.1 明确证明 LACE-Multi 的 $h(P_t)=(1-P_t)-P_t\ln P_t$ 在 $P_t=e^{-2}$ 取极大值，并指出最难点（$P_t<e^{-2}$）放大回退 — line 97 h'(P_t)=0 at P_t=e^{-2}, h''<0; lines 806-817
+- [x] §6.1 证明乘以无界 $L_{CE}$ 在 $P_t\to0$ 时损失值发散（loss-value divergence, batch domination）— Theorem 6.1 line 822; note: gradient is BOUNDED (not exploding), corrected in paper §3.1
+- [x] §6.2 用 f-softargmax Jacobian 给出 MBA-f 的严格梯度，指出原 f-Multi 的共线假设仅在 $\alpha\to0$ 成立 — lines 868-880 correct gradient decomposition; paper Appendix A.3; Thm 3.3
+- [ ] §6.2 给出 D3 解决的充要条件，并验证 $\alpha\in\{0,0.5,1.5\}$ — condition stated at line 880; α=0.5/1.5 numerical verification needs Table V2 (ablation runs, future work)
+- [x] §6.3 证明简化版 $\lambda=\sigma(a\bar P_t+b)$ 在 $\bar P_t$ 单调上升时等价单调调度 — Theorem 6.4 equivalent (line 892+ §6.3.1 pseudo-rebound proof); paper Thm 3.4
+- [x] §6.4 给出 MBA 族统一框架：理性门 $\phi_\gamma$ 严格单调有界、温度化 $\tau_\delta$、放大因子 $g=1+\sigma\psi$ — line 930 unified form, line 936 amplification factor
+- [x] §6.4 含单调性定理、有界性定理、Bayes 一致性草图（严格性高于已有章节） — Theorems 6.6 (bounded g≥1), 6.7 (Bayes consistency sketch), 6.8 (controlled non-monotonicity) at lines 936-944
+- [x] §6.5 MBA-CE：$\psi(P_t)$ 显式形式 + 退化到 LACE-Multi 的论证 — Theorem 6.9 line 954; explicit ψ derived at line 936
+- [x] §6.6 MBA-f：退化到 MBA-CE 的论证 — §6.6 line 958; α→0 gives scale=1, P_t^α→P_t, L_α→CE (paper verified: diff=0)
+- [x] §6.7 MBA-PS：非退化解保证 + 退化到 MBA-CE 的论证 — §6.7 line 972; Theorem 6.12 line 987; ρ(t) active cosine prevents λ≡0
+- [x] §6.8 D1–D6 对照表 + 三方案退化/推广关系总结 — lines 991-1007: 7-col D1-D6 table + degeneration chain MBA-f ⊃ MBA-CE ⊃ LACE-Multi ⊃ CE
 
 ## 代码结构与实现
 
