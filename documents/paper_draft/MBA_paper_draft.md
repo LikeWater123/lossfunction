@@ -239,9 +239,9 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 | **MBA-f** | 46.75 | 43.42 |
 | **MBA-PS** | 47.03 | 33.66 |
 
-**Figure 1.** [TODO] Learnable-parameter trajectories for MBA-CE's $\epsilon_y$ (averaged across classes) and MBA-PS's $\lambda_y$ (per-class, plus the cosine $\rho(t)$ overlay), to visualize the active rebound. Source: `runs/cifar10_resnet56_mba_{ce,ps}_seed0/history.json` (param-trajectory log).
+**Figure 1.** Learnable-parameter trajectories for MBA-CE (left) and MBA-PS (centre, right) on CIFAR-10 + ResNet-56, 100 epochs. Left: MBA-CE's $\sigma(\epsilon_y)$ (mean over 10 classes, shaded min/max) decreases from 0.015 to 0.0015, showing the amplification strength decays as the model learns. Centre: MBA-PS's proactive $\lambda_y$ (mean, computed from $a_y$, $c_y$, and the cosine $\rho(t)$) with $\rho(t)$ overlay (dashed); $\lambda_y$ rises from 0.031 to 0.059 despite $\rho(t)$ decaying from 1.0 to 0, because $a_y$ grows to compensate. Right: MBA-PS's $\sigma(\epsilon_y)$ (0.185→0.082) remains an order of magnitude larger than MBA-CE's, showing that the proactive schedule sustains amplification longer. Source: `runs/cifar10_resnet56_mba_{ce,ps}_seed0/param_trajectory.json`.
 
-**Expected findings (to be confirmed by results).** (i) MBA-CE should match or slightly exceed LACE-Multi, since it has extra freedom via $\gamma$ and $\delta$. (ii) MBA-f should be comparable to f-Multi but with a *correct* gradient (Section 6.4 verifies the alignment condition). (iii) MBA-PS should exhibit the most distinct trajectory — $\lambda_y$ should oscillate with $\rho(t)$ rather than track $\bar P_t$ monotonically. (iv) All three MBA losses should be competitive with or better than CE/Focal/PolyLoss on ECE, due to the bounded loss value.
+**Observed findings.** (i) MBA-CE (93.61% on CIFAR-10/ResNet-56) is competitive with LACE-Multi (93.83%) but does not exceed it; on CIFAR-100/ResNet-56, MBA-CE (70.41%) underperforms LACE-Multi (72.18%) and CE (72.69%), suggesting the $\delta=10^{-3}$ clamp is too aggressive for 100-class settings. (ii) MBA-f is competitive with the f-Multi baseline on ResNet (pending re-run with corrected $L_\alpha$); on ViT it underperforms (66.67% vs 71–76%), attributable to the absence of a $\delta$ clamp and the $0.5\times$ gradient scaling from $\alpha=0.5$. (iii) MBA-PS exhibits the most distinct trajectory — $\lambda_y$ *rises* over training despite the decaying cosine $\rho(t)$, because $a_y$ grows to compensate; this is an *active* behaviour contrasting with the reactive pseudo-rebound of Section 3.3. (iv) MBA-PS achieves the best or near-best ECE among MBA variants in all four configs (3.91%, 17.41%, 11.59%, 33.66%), and is the best MBA variant on ViT (75.55% CIFAR-10, 47.03% CIFAR-100), suggesting the proactive schedule helps undertrained models.
 
 ### 6.3 Ablations
 
@@ -251,8 +251,8 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 
 | $\gamma$ | Top-1 (%) | ECE (%) | $\|\epsilon_y\|$ at end |
 |----------|-----------|---------|-------------------------|
-| 0 | [TODO: `runs/cifar10_resnet56_mba_ce_seed0/history.json`] | [TODO] | [TODO] |
-| 1 | [TODO] | [TODO] | [TODO] |
+| 0 | [TODO: run with `gamma=0`] | [TODO] | [TODO] |
+| 1 | 93.61 | 3.83 | 20.68 |
 | 3 | [TODO] | [TODO] | [TODO] |
 | 10 | [TODO] | [TODO] | [TODO] |
 
@@ -260,7 +260,7 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 
 | $\delta$ | Top-1 (%) | ECE (%) | # truncated samples / epoch |
 |----------|-----------|---------|------------------------------|
-| $10^{-3}$ | [TODO] | [TODO] | [TODO] |
+| $10^{-3}$ | 93.61 | 3.83 | [TODO: instrument `_tempered_loss`] |
 | $10^{-2}$ | [TODO] | [TODO] | [TODO] |
 | $10^{-1}$ | [TODO] | [TODO] | [TODO] |
 
@@ -276,8 +276,8 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 
 | Variant | Top-1 (%) | ECE (%) | $\lambda_y$ range over training |
 |---------|-----------|---------|----------------------------------|
-| $b_y\equiv 0$ (active only) | [TODO] | [TODO] | [TODO] |
-| learned $b_y$ (active + reactive) | [TODO] | [TODO] | [TODO] |
+| $b_y\equiv 0$ (active only) | [TODO: run with `b_init=0` frozen] | [TODO] | [TODO] |
+| learned $b_y$ (active + reactive) | 93.61 | 3.91 | 0.031→0.059 |
 
 ### 6.4 Theoretical Verification
 
@@ -299,7 +299,7 @@ These are deterministic code-level checks, not training runs.
 | 0.5 | [TODO] | [TODO] | [TODO] |
 | 1.5 | [TODO] | [TODO] | [TODO] |
 
-This directly tests Theorem 3.3 / 6.3: if the fraction drops substantially for $\alpha>0$, the f-Multi collinearity assumption is empirically violated.
+This directly tests Theorem 3.3 / 6.3. Note: with the NLL form $L_\alpha=-\ln P_t^\alpha$ (used in our implementation), collinearity holds by construction ($-\nabla_\theta P_t^\alpha = P_t^\alpha \nabla_\theta L_\alpha$), so the D3 fraction should remain 100% for all $\alpha$. The collinearity *failure* predicted by Thm. 3.3 applies specifically to the general f-divergence loss $L_\alpha \neq -\ln P_t^\alpha$, which we do not use because it is target-independent and collapses training (see Discussion).
 
 ---
 
@@ -309,7 +309,7 @@ This directly tests Theorem 3.3 / 6.3: if the fraction drops substantially for $
 
 **The non-monotonicity trade-off.** Theorem 3.2 establishes that strict monotonicity is *unattainable* for log-internal losses; MBA does not claim to eliminate non-monotonicity, only to *control* it (Thm. 5.8). The non-monotone region $(0,e^{-1})$ shrinks as $\gamma$ grows and is *covered* by the $\delta$-truncation in practice. A strictly monotone variant exists if one is willing to abandon the log-internal structure for a bounded surrogate $\tilde\tau(P_t)=(1-P_t)^\beta$ (Section 6.5 of the analysis); we treat this as an optional switch and keep $\tau_\delta$ as the default to preserve the CE degeneration.
 
-**The collinearity gap is real but small in practice.** Theorem 3.3 predicts that f-Multi's claimed amplification factor fails for $\alpha>0$; the practical severity depends on how often $\nabla_\theta P_t^\alpha$ and $\nabla_\theta L_\alpha$ are misaligned. Our Section 6.4 measurement quantifies this. MBA-f side-steps the issue by keeping the correct two-term gradient (Thm. 5.10) at the cost of carrying the f-softargmax Jacobian in backprop.
+**The collinearity gap and the f-Multi implementation lesson.** Theorem 3.3 predicts that f-Multi's claimed amplification factor fails for $\alpha>0$ when $L_\alpha$ is the general f-divergence. In practice, we discovered that the f-divergence form $D_f(p,\text{uniform})$ is *target-independent* and minimised (= 0) at the uniform distribution — using it as a classification loss causes immediate collapse to random-chance accuracy. We therefore implement f-Multi with the target-dependent Fenchel-Young NLL form $L_\alpha=-\ln P_t^\alpha$ (Roulet et al., Eq. 5), which does not collapse. With the NLL form, collinearity *holds* (since $-\nabla_\theta P_t^\alpha = P_t^\alpha \nabla_\theta L_\alpha$), so the amplification factor has the same non-monotone structure as LACE-Multi's $h(P_t)$ — the criticism of Section 3.1 applies. MBA-f's rational gate $\phi_\gamma$ then provides the bounded, controlled amplification that the multiplicative $(1-P_t^\alpha)$ gate cannot.
 
 **Honest limitations.** This draft reports **100 epochs** (not the standard 200) and a **single seed** (not 3), executed on a single NVIDIA RTX 4090. Absolute accuracies are therefore not directly comparable to published 200-epoch CIFAR numbers; the comparison of interest is *relative ordering* among the eight losses under identical compute. The degeneration and boundedness theorems (Section 5) are independent of these experimental caveats. A full rerun at 200 epochs / 3 seeds is planned for the camera-ready version.
 
@@ -361,7 +361,7 @@ where $\nabla_\theta P_t^\alpha=(\mathbf J_{\mathbf p^*}(\mathbf z)\,\nabla_\the
 
 ### B. Implementation Details
 
-All losses are implemented in `src/methods/`: `baselines.py` (CE, Focal, PolyLoss), `lace_variants.py` (LACE-Multi, f-Multi), `mba.py` (MBA-CE, MBA-f, MBA-PS). The rational gate and tempered loss are shared helpers. Numerical stability uses `torch.nn.functional.log_softmax` and `clamp(min=delta)`. The f-softargmax is the closed-form tempered softmax $p^*=\mathrm{softmax}((1-\alpha)\mathbf z)$ [Roulet et al., 2025], which degenerates to softmax at $\alpha=0$; for $\alpha>1$ the general (bisection) f-softargmax would be needed but is out of scope for this draft. Training is launched via `run_experiments.sh` (16 jobs per model, 8 threads each on a 128-core CPU). Configs live in `src/configs/`; the `defaults.yaml` carries the full schema and per-loss recommended hyperparameters.
+All losses are implemented in `src/methods/`: `baselines.py` (CE, Focal, PolyLoss), `lace_variants.py` (LACE-Multi, f-Multi), `mba.py` (MBA-CE, MBA-f, MBA-PS). The rational gate and tempered loss are shared helpers. Numerical stability uses `torch.nn.functional.log_softmax` and `clamp(min=delta)`. The f-softargmax is the closed-form tempered softmax $p^*=\mathrm{softmax}((1-\alpha)\mathbf z)$ [Roulet et al., 2025], which degenerates to softmax at $\alpha=0$; for $\alpha>1$ the general (bisection) f-softargmax would be needed but is out of scope for this draft. Training runs on a single NVIDIA RTX 4090 (24 GB) via `run_experiments_gpu.sh`: ResNet-56 runs 16 jobs in parallel (~17 GB), ViT runs 8 jobs (~8–12 GB), each with 4 data-loader workers and `pin_memory=True`. Configs live in `src/configs/`; the `defaults.yaml` carries the full schema and per-loss recommended hyperparameters.
 
 ### C. Additional Ablations (Placeholder)
 
