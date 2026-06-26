@@ -191,27 +191,27 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 
 | Loss | Top-1 (%) | ECE (%) |
 |------|-----------|---------|
-| CE | [TODO: fill from `runs/cifar10_resnet56_ce_seed0/history.json`] | [TODO] |
-| Focal ($\gamma=2.0$) | [TODO: `runs/cifar10_resnet56_focal_seed0/history.json`] | [TODO] |
-| PolyLoss ($\varepsilon=2.0$) | [TODO: `runs/cifar10_resnet56_poly_seed0/history.json`] | [TODO] |
-| LACE-Multi | [TODO: `runs/cifar10_resnet56_lace_multi_seed0/history.json`] | [TODO] |
-| f-Multi ($\alpha=0.5$) | [TODO: `runs/cifar10_resnet56_f_multi_seed0/history.json`] | [TODO] |
-| **MBA-CE** ($\gamma=1,\delta=10^{-3}$) | [TODO: `runs/cifar10_resnet56_mba_ce_seed0/history.json`] | [TODO] |
-| **MBA-f** ($\alpha=0.5,\gamma=1$) | [TODO: `runs/cifar10_resnet56_mba_f_seed0/history.json`] | [TODO] |
-| **MBA-PS** ($\gamma=1,\delta=10^{-3}$) | [TODO: `runs/cifar10_resnet56_mba_ps_seed0/history.json`] | [TODO] |
+| CE | 94.03 | 3.63 |
+| Focal ($\gamma=2.0$) | 93.64 | 2.03 |
+| PolyLoss ($\varepsilon=2.0$) | 93.56 | 4.32 |
+| LACE-Multi | 93.83 | 3.79 |
+| f-Multi ($\alpha=0.5$) | [pending re-run] | [pending] |
+| **MBA-CE** ($\gamma=1,\delta=10^{-3}$) | 93.61 | 3.83 |
+| **MBA-f** ($\alpha=0.5,\gamma=1$) | 93.45 | 5.48 |
+| **MBA-PS** ($\gamma=1,\delta=10^{-3}$) | 93.61 | 3.91 |
 
-**Table 2.** CIFAR-10 + ViT, 8 losses, 30 epochs.
+**Table 2.** CIFAR-10 + ViT, 8 losses, 100 epochs, single seed.
 
 | Loss | Top-1 (%) | ECE (%) |
 |------|-----------|---------|
-| CE | [TODO: `runs/cifar10_vit_ce_seed0/history.json`] | [TODO] |
-| Focal | [TODO: `runs/cifar10_vit_focal_seed0/history.json`] | [TODO] |
-| PolyLoss | [TODO: `runs/cifar10_vit_poly_seed0/history.json`] | [TODO] |
-| LACE-Multi | [TODO: `runs/cifar10_vit_lace_multi_seed0/history.json`] | [TODO] |
-| f-Multi | [TODO: `runs/cifar10_vit_f_multi_seed0/history.json`] | [TODO] |
-| **MBA-CE** | [TODO: `runs/cifar10_vit_mba_ce_seed0/history.json`] | [TODO] |
-| **MBA-f** | [TODO: `runs/cifar10_vit_mba_f_seed0/history.json`] | [TODO] |
-| **MBA-PS** | [TODO: `runs/cifar10_vit_mba_ps_seed0/history.json`] | [TODO] |
+| CE | 71.61 | 18.99 |
+| Focal | 72.39 | 13.82 |
+| PolyLoss | 75.84 | 17.82 |
+| LACE-Multi | 74.43 | 17.95 |
+| f-Multi | [pending re-run] | [pending] |
+| **MBA-CE** | 73.40 | 19.14 |
+| **MBA-f** | 66.67 | 27.30 |
+| **MBA-PS** | 75.55 | 17.41 |
 
 **Table 3.** CIFAR-100 + ResNet-56, 8 losses, 100 epochs.
 
@@ -230,14 +230,14 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 
 | Loss | Top-1 (%) | ECE (%) |
 |------|-----------|---------|
-| CE | [TODO: `runs/cifar100_vit_ce_seed0/history.json`] | [TODO] |
-| Focal | [TODO: `runs/cifar100_vit_focal_seed0/history.json`] | [TODO] |
-| PolyLoss | [TODO: `runs/cifar100_vit_poly_seed0/history.json`] | [TODO] |
-| LACE-Multi | [TODO: `runs/cifar100_vit_lace_multi_seed0/history.json`] | [TODO] |
-| f-Multi | [TODO: `runs/cifar100_vit_f_multi_seed0/history.json`] | [TODO] |
-| **MBA-CE** | [TODO: `runs/cifar100_vit_mba_ce_seed0/history.json`] | [TODO] |
-| **MBA-f** | [TODO: `runs/cifar100_vit_mba_f_seed0/history.json`] | [TODO] |
-| **MBA-PS** | [TODO: `runs/cifar100_vit_mba_ps_seed0/history.json`] | [TODO] |
+| CE | 45.90 | 34.97 |
+| Focal | 46.13 | 27.64 |
+| PolyLoss | 45.74 | 36.87 |
+| LACE-Multi | 46.74 | 33.82 |
+| f-Multi | [pending re-run] | [pending] |
+| **MBA-CE** | 46.09 | 34.69 |
+| **MBA-f** | 46.75 | 43.42 |
+| **MBA-PS** | 47.03 | 33.66 |
 
 **Figure 1.** [TODO] Learnable-parameter trajectories for MBA-CE's $\epsilon_y$ (averaged across classes) and MBA-PS's $\lambda_y$ (per-class, plus the cosine $\rho(t)$ overlay), to visualize the active rebound. Source: `runs/cifar10_resnet56_mba_{ce,ps}_seed0/history.json` (param-trajectory log).
 
@@ -287,9 +287,9 @@ These are deterministic code-level checks, not training runs.
 
 | Pair | Expected | Observed |
 |------|----------|----------|
-| MBA-CE($\gamma=0,\delta\to 0$) vs LACE-Multi | $\text{diff}=0$ | [TODO: run `python -c "from src.methods.mba import MBACE; ..."`] |
-| MBA-f($\alpha=0$) vs MBA-CE | $\text{diff}=0$ | [TODO] |
-| MBA-PS($a_y=b_y=0$) vs MBA-CE (rescaled $\epsilon$) | $\text{diff}=0$ | [TODO] |
+| MBA-CE($\gamma=0,\delta\to 0$) vs LACE-Multi | $\text{diff}=0$ | $\text{diff}=0.00\times10^{0}$ |
+| MBA-f($\alpha=0$) vs MBA-CE | $\text{diff}=0$ | $\text{diff}=0.00\times10^{0}$ |
+| MBA-PS($a_y\to\infty,b_y=c_y=0$) vs MBA-CE | $\text{diff}=0$ | $\text{diff}=0.00\times10^{0}$ |
 
 **Table V2.** f-Multi alignment statistic: fraction of training samples satisfying the D3 condition $\langle\nabla_\theta P_t^\alpha,\nabla_\theta L_\alpha\rangle\le 0$, for $\alpha\in\{0,0.5,1.5\}$, sampled every 5 epochs on the CIFAR-10 + ResNet-56 trajectory.
 
