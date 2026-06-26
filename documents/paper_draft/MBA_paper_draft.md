@@ -208,7 +208,7 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 | Focal | 72.39 | 13.82 |
 | PolyLoss | 75.84 | 17.82 |
 | LACE-Multi | 74.43 | 17.95 |
-| f-Multi | [pending re-run] | [pending] |
+| f-Multi | 69.16 | 25.39 |
 | **MBA-CE** | 73.40 | 19.14 |
 | **MBA-f** | 66.67 | 27.30 |
 | **MBA-PS** | 75.55 | 17.41 |
@@ -221,7 +221,7 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 | Focal ($\gamma=2.0$) | 71.25 | 6.38 |
 | PolyLoss ($\varepsilon=2.0$) | 72.53 | 14.82 |
 | LACE-Multi | 72.18 | 12.17 |
-| f-Multi ($\alpha=0.5$) | [pending re-run] | [pending] |
+| f-Multi ($\alpha=0.5$) | 72.35 | 19.57 |
 | **MBA-CE** ($\gamma=1,\delta=10^{-3}$) | 70.41 | 12.81 |
 | **MBA-f** ($\alpha=0.5,\gamma=1$) | 72.29 | 19.92 |
 | **MBA-PS** ($\gamma=1,\delta=10^{-3}$) | 72.04 | 11.59 |
