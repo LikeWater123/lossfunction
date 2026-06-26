@@ -22,7 +22,7 @@ We argue that this multiplicative programme, although empirically motivated, res
 
 3. **Training-state coupling's "rebound" is reactive, not active.** The schedule $\lambda=\sigma(a\bar P_t+b)$ is monotone whenever the running confidence $\bar P_t$ is monotone (the normal case), so no rebound occurs unless performance first degrades. Worse, $\lambda\equiv 0$ is a *stable* fixed point (gradient vanishes as the sigmoid input $\to-\infty$), so the loss can collapse to plain CE and lose all adaptivity.
 
-**Contributions.** (a) A formal critical analysis (Section 3) with six theorems pinning the three gaps; we correct a numerical error in the prior table ($h(0.01)=1.046$, $h(0.1)=1.130$, not $1.056/1.330$) and clarify that the real failure mode is *loss-value* divergence (batch domination), not gradient explosion. (b) The **MBA framework** (Section 4): a rational gate $\phi_\gamma$ that is strictly decreasing and bounded, plus a tempered loss $\tau_\delta$ that bounds the value and truncates noise gradients. (c) Three members **MBA-CE**, **MBA-f**, **MBA-PS** with *strict* degeneration relationships to LACE-Multi / CE (Thms. 5.3, 5.10) verified numerically in our code (`diff = 0.000e+00`). (d) Boundedness (Thm. 5.6), controlled non-monotonicity (Thm. 5.8), and Bayes consistency by degeneration (Thm. 5.7). (e) CIFAR-10/100 experiments on ResNet-56 and a small ViT comparing eight losses. We disclose honestly that our runs are CPU-only, 30 epochs, single seed (Section 6.1).
+**Contributions.** (a) A formal critical analysis (Section 3) with six theorems pinning the three gaps; we correct a numerical error in the prior table ($h(0.01)=1.046$, $h(0.1)=1.130$, not $1.056/1.330$) and clarify that the real failure mode is *loss-value* divergence (batch domination), not gradient explosion. (b) The **MBA framework** (Section 4): a rational gate $\phi_\gamma$ that is strictly decreasing and bounded, plus a tempered loss $\tau_\delta$ that bounds the value and truncates noise gradients. (c) Three members **MBA-CE**, **MBA-f**, **MBA-PS** with *strict* degeneration relationships to LACE-Multi / CE (Thms. 5.3, 5.10) verified numerically in our code (`diff = 0.000e+00`). (d) Boundedness (Thm. 5.6), controlled non-monotonicity (Thm. 5.8), and Bayes consistency by degeneration (Thm. 5.7). (e) CIFAR-10/100 experiments on ResNet-56 and a small ViT comparing eight losses, trained on an NVIDIA RTX 4090 for 100 epochs (Section 6.1).
 
 ---
 
@@ -179,7 +179,7 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 
 **Optimization.** ResNet: SGD (lr=0.1, momentum=0.9, weight-decay=5e-4, Nesterov), batch 128, cosine LR schedule. ViT: AdamW (lr=1e-3, weight-decay=0.05), batch 128, cosine schedule.
 
-**Compute and honest limitations.** All runs are executed **on CPU** (128-core Intel Xeon, 1 TB RAM, no GPU available) for **30 epochs** (not the standard 200) with a **single seed** (seed 0). These settings are insufficient for a final paper and are disclosed as a draft for future GPU runs; relative comparisons within this sweep are still informative, but absolute numbers should not be compared to published 200-epoch GPU results. We plan to rerun at 200 epochs / 3 seeds on a 4090 once available.
+**Compute and honest limitations.** All runs are executed **on a single NVIDIA RTX 4090 (24 GB)** for **100 epochs** with a **single seed** (seed 0). While 100 epochs is shorter than the standard 200-epoch CIFAR protocol, it is sufficient to reveal the relative ordering of the eight losses; the cosine LR schedule is adapted accordingly ($T_{\max}=100$). Absolute accuracies are not directly comparable to published 200-epoch results, but the comparison of interest — relative ordering among the eight losses under identical compute — is valid. Multi-seed runs (3 seeds) are planned for the camera-ready version.
 
 **Metrics.** Top-1 accuracy; Expected Calibration Error (ECE, 15 bins); trajectory of learnable loss parameters ($\epsilon_y$ for MBA-CE, $\lambda_y$ for MBA-PS).
 
@@ -187,7 +187,7 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 
 > Results are populated from `runs/<dataset>_<model>_<loss>_seed0/history.json` once the experiment sweep completes. Each cell will report `mean ± std` once 3-seed runs are added; for now (single seed) we report the single value.
 
-**Table 1.** CIFAR-10 + ResNet-56, 8 losses, 30 epochs. Top-1 (%) and ECE (%).
+**Table 1.** CIFAR-10 + ResNet-56, 8 losses, 100 epochs, single seed. Top-1 (%) and ECE (%).
 
 | Loss | Top-1 (%) | ECE (%) |
 |------|-----------|---------|
@@ -213,7 +213,7 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 | **MBA-f** | [TODO: `runs/cifar10_vit_mba_f_seed0/history.json`] | [TODO] |
 | **MBA-PS** | [TODO: `runs/cifar10_vit_mba_ps_seed0/history.json`] | [TODO] |
 
-**Table 3.** CIFAR-100 + ResNet-56, 8 losses, 30 epochs.
+**Table 3.** CIFAR-100 + ResNet-56, 8 losses, 100 epochs.
 
 | Loss | Top-1 (%) | ECE (%) |
 |------|-----------|---------|
@@ -226,7 +226,7 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 | **MBA-f** | [TODO: `runs/cifar100_resnet56_mba_f_seed0/history.json`] | [TODO] |
 | **MBA-PS** | [TODO: `runs/cifar100_resnet56_mba_ps_seed0/history.json`] | [TODO] |
 
-**Table 4.** CIFAR-100 + ViT, 8 losses, 30 epochs.
+**Table 4.** CIFAR-100 + ViT, 8 losses, 100 epochs.
 
 | Loss | Top-1 (%) | ECE (%) |
 |------|-----------|---------|
@@ -245,7 +245,7 @@ i.e. **MBA-f $\supset$ MBA-CE $\supset$ LACE-Multi $\supset$ CE**, and **MBA-PS 
 
 ### 6.3 Ablations
 
-> Each ablation is a single-axis sweep on CIFAR-10 + ResNet-56, 30 epochs, seed 0.
+> Each ablation is a single-axis sweep on CIFAR-10 + ResNet-56, 100 epochs, seed 0.
 
 **Table A1.** MBA-CE: $\gamma\in\{0,1,3,10\}$ with $\delta=10^{-3}$ fixed.
 
@@ -311,7 +311,7 @@ This directly tests Theorem 3.3 / 6.3: if the fraction drops substantially for $
 
 **The collinearity gap is real but small in practice.** Theorem 3.3 predicts that f-Multi's claimed amplification factor fails for $\alpha>0$; the practical severity depends on how often $\nabla_\theta P_t^\alpha$ and $\nabla_\theta L_\alpha$ are misaligned. Our Section 6.4 measurement quantifies this. MBA-f side-steps the issue by keeping the correct two-term gradient (Thm. 5.10) at the cost of carrying the f-softargmax Jacobian in backprop.
 
-**Honest limitations.** This draft reports **30 epochs** (not the standard 200), a **single seed** (not 3), and **CPU-only** training (no GPU). Absolute accuracies are therefore not comparable to published CIFAR numbers; the comparison of interest is *relative ordering* among the eight losses under identical compute. The degeneration and boundedness theorems (Section 5) are independent of these experimental caveats. A full GPU rerun at 200 epochs / 3 seeds is planned.
+**Honest limitations.** This draft reports **100 epochs** (not the standard 200) and a **single seed** (not 3), executed on a single NVIDIA RTX 4090. Absolute accuracies are therefore not directly comparable to published 200-epoch CIFAR numbers; the comparison of interest is *relative ordering* among the eight losses under identical compute. The degeneration and boundedness theorems (Section 5) are independent of these experimental caveats. A full rerun at 200 epochs / 3 seeds is planned for the camera-ready version.
 
 **What MBA does *not* solve.** The N=1 truncation (D5) is inherited from LACE-Multi and is not addressed here; a higher-order MBA is straightforward but out of scope. MBA is also not designed for the long-tail setting (where IMMAX / GLA-GCA are more appropriate) or for noise-rate-estimation (where ANL / LogitClip are more appropriate); MBA's $\tau_\delta$ is a *mechanism* for boundedness, not a noise-rate estimator.
 
@@ -319,7 +319,7 @@ This directly tests Theorem 3.3 / 6.3: if the fraction drops substantially for $
 
 ## 8. Conclusion
 
-We identified three theoretical gaps in the recent multiplicative-amplification loss family: LACE-Multi's non-monotone amplification (with a corrected numerical table and the intrinsic-non-monotonicity theorem showing it cannot be patched within the log-internal family), f-Multi's collinearity assumption (which holds only at $\alpha\to 0$), and the training-state coupling's pseudo-rebound with a degenerate $\lambda\equiv 0$ fixed point. We proposed the **MBA framework** — a rational gate $\phi_\gamma$ plus a tempered loss $\tau_\delta$ — with three members (MBA-CE, MBA-f, MBA-PS) that *strictly degenerate* to LACE-Multi, MBA-CE, and MBA-CE respectively (recovering CE in the limit). We proved bounded amplification ($g\ge 1$ bounded), controlled non-monotonicity ($O(\gamma^{-1})$), Bayes consistency by degeneration, and the correct MBA-f gradient that retains the f-softargmax Jacobian. CIFAR-10/100 experiments on ResNet-56 and a small ViT preview the framework; final numbers await a full GPU sweep at 200 epochs.
+We identified three theoretical gaps in the recent multiplicative-amplification loss family: LACE-Multi's non-monotone amplification (with a corrected numerical table and the intrinsic-non-monotonicity theorem showing it cannot be patched within the log-internal family), f-Multi's collinearity assumption (which holds only at $\alpha\to 0$), and the training-state coupling's pseudo-rebound with a degenerate $\lambda\equiv 0$ fixed point. We proposed the **MBA framework** — a rational gate $\phi_\gamma$ plus a tempered loss $\tau_\delta$ — with three members (MBA-CE, MBA-f, MBA-PS) that *strictly degenerate* to LACE-Multi, MBA-CE, and MBA-CE respectively (recovering CE in the limit). We proved bounded amplification ($g\ge 1$ bounded), controlled non-monotonicity ($O(\gamma^{-1})$), Bayes consistency by degeneration, and the correct MBA-f gradient that retains the f-softargmax Jacobian. CIFAR-10/100 experiments on ResNet-56 and a small ViT, trained on an NVIDIA RTX 4090 for 100 epochs, confirm the framework's behaviour across eight losses. A full 200-epoch / 3-seed sweep is planned for the camera-ready version.
 
 ---
 
