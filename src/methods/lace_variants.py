@@ -67,43 +67,26 @@ class FMulti(nn.Module):
     .. math::
         L_{\text{f-Multi}}
             = \left[1 + \sigma(\epsilon_y)\,(1 - P_t^{\alpha})\right]\,
-               L_{\alpha}(\mathbf{z}, y)
+               (-\ln P_t^{\alpha})
 
-    where :math:`L_\alpha` is the alpha-divergence loss (Roulet et al., ICML
-    2025) and :math:`P_t^{\alpha}` is the f-softargmax probability of the
-    correct class.
+    where :math:`P_t^{\alpha} = \mathrm{softmax}((1-\alpha)\,\mathbf z)_y` is the
+    f-softargmax probability of the correct class and :math:`L_\alpha = -\ln
+    P_t^{\alpha}` is the target-dependent Fenchel-Young NLL loss (Roulet et al.,
+    ICML 2025, Eq. 5).
 
-    Alpha-divergence loss (uniform reference measure ``pi = 1/C``)::
-
-        L_alpha = 1/(alpha*(1-alpha)) * [1 - C^(-alpha) * sum_j p_j^(1-alpha)]
-
-    with ``p_j = softmax(z)_j``.  f-softargmax (tempered softmax, closed form
-    for uniform reference)::
+    f-softargmax (tempered softmax, closed form for uniform reference)::
 
         p*_j = softmax(z_j * (1 - alpha))_j
 
-    Singular cases (handled explicitly):
-      * ``alpha = 0``: ``L_alpha`` is overridden to ``-ln p_y`` (cross-entropy)
-        so that ``f-Multi`` degenerates to ``LACE-Multi``, matching the
-        theoretical claim in Chapter 2 ("when alpha -> 0, f-Multi degenerates
-        to LACE-Multi").  NB: the literal alpha->0 limit of the divergence
-        formula is ``KL(p || uniform)`` (verified via L'Hopital); we use CE
-        here per the design intent so the degenerate test passes.
-      * ``alpha = 1``: ``L_alpha -> KL(uniform || p)`` (the alpha->1 limit,
-        verified via L'Hopital).
+    Degeneration: ``alpha = 0`` -> standard softmax + CE, so f-Multi degenerates
+    to LACE-Multi.  ``alpha = 1`` -> uniform softmax (degenerate); falls back to
+    ``KL(uniform || p)``.
 
-    Verification note (Roulet et al., ICML 2025; arXiv:2501.18537):
-      The formula implemented in ``alpha_div_loss`` is the f-DIVERGENCE
-      ``D_f(p, pi)`` (their Eq. 8, used as the regulariser ``Omega_f``), with
-      the reverse-alpha generator ``f(u) = (1 - u^(1-alpha)) / (alpha*(1-alpha))``
-      (convex, ``f(1)=0``, hence ``L_alpha >= 0``).  The strict Fenchel-Young
-      loss (their Eq. 5) additionally contains ``-<z, y> + Omega(y)`` terms and
-      depends on ``y``; in Roulet et al.'s Tsallis convention ``alpha = 1``
-      recovers cross-entropy, whereas this project follows the LACE改进方案
-      convention where ``alpha = 0`` recovers cross-entropy.  We implement the
-      divergence form given in the design doc, with the ``alpha = 0`` case
-      overridden to cross-entropy so that ``f-Multi`` degenerates to
-      ``LACE-Multi`` as required by the degenerate test.
+    Note: an earlier implementation used the f-divergence regulariser
+    ``D_f(p, uniform)`` (Roulet et al., Eq. 8) as ``L_alpha``.  That form is
+    target-independent and minimised (= 0) at the uniform distribution,
+    causing the model to collapse to random-chance accuracy.  The NLL form
+    used here is the correct target-dependent classification loss.
     """
 
     def __init__(
@@ -126,36 +109,32 @@ class FMulti(nn.Module):
     def alpha_div_loss(
         self, logits: torch.Tensor, targets: torch.Tensor
     ) -> torch.Tensor:
-        """Per-sample alpha-divergence loss ``(B,)`` (uniform reference pi=1/C)."""
+        """Per-sample alpha-divergence loss ``(B,)``.
+
+        Uses the target-dependent Fenchel-Young NLL form
+        ``L_alpha = -ln P_t^alpha`` where ``P_t^alpha = softmax((1-alpha)*z)_y``.
+        This is the proper classification loss (Roulet et al., Eq. 5), NOT the
+        target-independent f-divergence regulariser (their Eq. 8), which is
+        minimised at the uniform distribution and collapses training.
+        """
         alpha = self.alpha
 
-        if abs(alpha) < 1e-6:
-            # alpha -> 0: cross-entropy (-ln p_y).  Override so f-Multi
-            # degenerates to LACE-Multi (see class docstring).
-            return F.cross_entropy(logits, targets, reduction="none")
-
         if abs(alpha - 1.0) < 1e-6:
-            # alpha -> 1: KL(uniform || p) = -ln C - (1/C) * sum_j ln p_j.
+            # alpha -> 1: scale = 0, softmax(0) = uniform, NLL = log C (constant).
+            # Fall back to KL(uniform || p) for a non-trivial alpha=1 loss.
             p = F.softmax(logits, dim=-1)
             p_safe = torch.where(p > 0, p, p.new_tensor(1e-12))
             c = float(self.num_classes)
             log_p_sum = torch.log(p_safe).sum(dim=-1)           # (B,)
             return -math.log(c) - log_p_sum / c                  # (B,)
 
-        # General case (alpha not in {0, 1}):
-        #   L_alpha = (1 - C^(-alpha) * sum_j p_j^(1-alpha)) / (alpha*(1-alpha))
-        # Derivation with pi_j = 1/C:
-        #   (p_j/pi_j)^(1-alpha) = (C p_j)^(1-alpha) = C^(1-alpha) p_j^(1-alpha)
-        #   sum_j pi_j (p_j/pi_j)^(1-alpha)
-        #       = (1/C) * C^(1-alpha) * sum_j p_j^(1-alpha)
-        #       = C^(-alpha) * sum_j p_j^(1-alpha)
-        p = F.softmax(logits, dim=-1)                           # (B, C)
-        # Numerical stability: avoid 0**negative = inf for alpha > 1.
-        p_safe = torch.where(p > 0, p, p.new_tensor(1e-12))
-        sum_term = (p_safe ** (1.0 - alpha)).sum(dim=-1)        # (B,)
-        c_alpha = float(self.num_classes) ** (-alpha)
-        term = c_alpha * sum_term                                # (B,)
-        return (1.0 - term) / (alpha * (1.0 - alpha))           # (B,)
+        # General case (alpha not in {1}): NLL of the f-softargmax probability.
+        # For alpha = 0 this degenerates to standard cross-entropy.
+        scale = 1.0 - alpha
+        log_pt_alpha = F.log_softmax(scale * logits, dim=-1).gather(
+            1, targets.view(-1, 1)
+        ).squeeze(1)                                            # (B,)
+        return -log_pt_alpha                                    # (B,)
 
     def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         p_star = self.f_softmax(logits)                                 # (B, C)
